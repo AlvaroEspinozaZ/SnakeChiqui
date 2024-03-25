@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 public class SnakeController : MonoBehaviour
 {
-    [SerializeField] float velocity,x,y;
+    [SerializeField] float velocity=0,x=0,y=0;
     [SerializeField] Vector2 direction;
     [SerializeField] bool directionValidx = true, directionValidy = true, stop=true;
-    [SerializeField] List<GameObject> cola=new List<GameObject>();
+    [SerializeField] public List<GameObject> cola=new List<GameObject>();
     [SerializeField] GameObject lose;
     void Start()
     {
@@ -19,37 +19,41 @@ public class SnakeController : MonoBehaviour
        
         x = Input.GetAxis("Horizontal");
         y = Input.GetAxis("Vertical");
-        if (x < 0)
+
+        if (Mathf.Abs(x) > Mathf.Abs(y))
         {
-            
-            direction = Vector2.left;
-            stop = false;
-        }     
-         
-        else if(x>0)
-        {
-            
-            direction = Vector2.right;
-            stop = false;
+            if (x < 0 && direction != Vector2.right)
+            {
+                direction = Vector2.left;
+                stop = false;
+            }
+            else if (x > 0 && direction != Vector2.left)
+            {
+                direction = Vector2.right;
+                stop = false;
+            }
         }
-        else if (y < 0)
+        else if (Mathf.Abs(y) > Mathf.Abs(x))
         {
-            direction = Vector2.down;
-            stop = false;
-        }
-        else if (y > 0)
-        {
-            direction = Vector2.up;
-            stop = false;
+            if (y < 0 && direction != Vector2.up)
+            {
+                direction = Vector2.down;
+                stop = false;
+            }
+            else if (y > 0 && direction != Vector2.down)
+            {
+                direction = Vector2.up;
+                stop = false;
+            }
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Fruit")
         {
-            UI_ManagerSinglenton.Instance.UpdateScore();
-            UI_ManagerSinglenton.Instance.Prueba();
-            GameObject newCola = Instantiate(cola[1]);
+            Score_ManagerSinglenton.Instance.UpdateScore();
+            Score_ManagerSinglenton.Instance.Prueba();
+            GameObject newCola = Instantiate(cola[1], cola[2].transform.position,Quaternion.identity) ;
             cola.Add(newCola);
             Destroy(collision.gameObject);
         }
@@ -57,7 +61,7 @@ public class SnakeController : MonoBehaviour
         {
             lose.SetActive(true);
             stop = true;
-
+            StopCoroutine(Movement());
         }
     }
     IEnumerator Movement()
@@ -72,15 +76,12 @@ public class SnakeController : MonoBehaviour
         if (!stop)
         {
             if (cola != null)
-            {
-               
+            {               
                 for (int i = 0; i < cola.Count; i++)
                 {
                     Vector3 temp = cola[i].transform.position;
                     cola[i].transform.position = Head;
-                    Head = temp;
-
-                    //yield return new WaitForSecondsRealtime(0.6f);
+                    Head = temp;                
                 }
             }
         }
